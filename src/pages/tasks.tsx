@@ -1,4 +1,5 @@
 import { AuthWrapper } from "@/components/AuthWrapper";
+import { DashboardHeader } from "@/components/DashboardHeader";
 import { useEffect, useState } from "react";
 import TasksList from "@/components/TasksList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -35,6 +36,7 @@ export default function TasksPage() {
   return (
     <AuthWrapper>
       <div className="min-h-screen bg-[#f8f9fa]">
+        <DashboardHeader />
         <div className="container mx-auto py-8 px-4 sm:px-6">
           <div className="mb-8">
             <h1 className="text-[32px] font-normal text-[#202124] mb-2 ">

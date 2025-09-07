@@ -26,7 +26,15 @@ export default function App({ Component, pageProps }: AppProps) {
     pathname.startsWith("/2fa/verify") ||
     pathname.startsWith("/payment-failed");
 
-  const showHeaderFooter = !isAdminRoute && !isAuthRoute;
+  // App-shell pages (internal dashboard area) render their own header (e.g., DashboardHeader)
+  const isAppShellRoute =
+    pathname === "/dashboard" ||
+    pathname.startsWith("/tasks") ||
+    pathname.startsWith("/reports") ||
+    pathname.startsWith("/plans-billing") ||
+    pathname.startsWith("/user/setting");
+
+  const showHeaderFooter = !isAdminRoute && !isAuthRoute && !isAppShellRoute;
 
   return (
     <QueryClientProvider client={queryClient}>

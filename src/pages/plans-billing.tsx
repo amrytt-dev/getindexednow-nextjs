@@ -1,10 +1,12 @@
 import { AuthWrapper } from "@/components/AuthWrapper";
-import { PlansBilling } from "@/pages/PlansBilling";
+import { DashboardHeader } from "@/components/DashboardHeader";
+// import PlansBilling from "@/src/pages/PlansBilling";
 
 export default function PlansBillingPage() {
   return (
     <AuthWrapper>
-      <PlansBilling />
+      <DashboardHeader />
+      {/* <PlansBilling /> */}
     </AuthWrapper>
   );
 }
