@@ -410,7 +410,7 @@ export const AuthPage = () => {
           title: "Two-factor authentication required",
           description: "Please enter the code from your authenticator app.",
         });
-        navigate(`/2fa/verify?userId=${data.userId}`, { replace: true });
+        router.push(`/2fa/verify?userId=${data.userId}`);
         return;
       }
 
@@ -583,7 +583,7 @@ export const AuthPage = () => {
     return () => {
       clearTimeout(timer);
     };
-  }, [setToken, navigate, handleSuccessfulLogin]);
+  }, [setToken, router.push, handleSuccessfulLogin]);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-primary/5 to-secondary/5 relative overflow-hidden">
@@ -600,7 +600,7 @@ export const AuthPage = () => {
         className="z-10 w-full max-w-md"
       >
         <div className="w-full flex justify-center">
-          <Link to="/">
+          <Link href="/">
             <img
               src="/logo.svg"
               alt="GetIndexedNow Logo"

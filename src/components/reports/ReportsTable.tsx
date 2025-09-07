@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/router";
 import {
   Table,
   TableBody,
@@ -82,7 +82,7 @@ export const ReportsTableSkeleton = () => {
 };
 
 export const ReportsTable = ({ tasks, onRefresh }: ReportsTableProps) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>(
     {}
   );
