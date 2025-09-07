@@ -12,7 +12,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -67,8 +68,7 @@ export const AuthPage = () => {
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
   const { setToken } = useUser();
   const {
     renderRecaptcha,
@@ -98,12 +98,13 @@ export const AuthPage = () => {
   }, [isLoaded, widgetRendered]);
 
   // Check for admin access message from redirect
-  const adminMessage = location.state?.message;
+  const adminMessage =
+    typeof router.query.message === "string" ? router.query.message : undefined;
 
   // Auto-handle Google login token
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const token = params.get("token");
+    const token =
+      typeof router.query.token === "string" ? router.query.token : null;
     if (token) {
       // If opened as a popup, post message to opener
       if (window.opener && window.opener !== window) {
@@ -118,13 +119,13 @@ export const AuthPage = () => {
           await setToken(token);
           // Small delay to ensure user context has time to update
           setTimeout(() => {
-            navigate("/dashboard", { replace: true });
+            router.replace("/dashboard");
           }, 100);
         };
         handleTokenAndNavigate();
       }
     }
-  }, [location, navigate, setToken]);
+  }, [router.query.token, setToken, router]);
 
   // Fallback reCAPTCHA script loading if dynamic loading fails
   useEffect(() => {
@@ -160,9 +161,9 @@ export const AuthPage = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      navigate("/dashboard", { replace: true });
+      router.replace("/dashboard");
     }
-  }, [navigate]);
+  }, [router]);
 
   // Render reCAPTCHA widget when script is loaded or tab changes
   useEffect(() => {
@@ -237,9 +238,7 @@ export const AuthPage = () => {
 
           // Small delay to ensure user context has time to update
           setTimeout(() => {
-            navigate(`/plans-billing?selectedPlan=${planData.planId}`, {
-              replace: true,
-            });
+            router.replace(`/plans-billing?selectedPlan=${planData.planId}`);
           }, 100);
           return;
         } else {
@@ -254,11 +253,11 @@ export const AuthPage = () => {
 
     // Default redirect to dashboard with small delay
     setTimeout(() => {
-      navigate("/dashboard", { replace: true });
+      router.replace("/dashboard");
     }, 100);
-  }, [navigate]);
+  }, [router]);
 
-  if (new URLSearchParams(location.search).get("token")) {
+  if (typeof router.query.token === "string") {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
         <div className="text-center">
@@ -632,7 +631,7 @@ export const AuthPage = () => {
 
           <CardContent>
             <Tabs
-              defaultValue="signin"
+              value={activeTab}
               className="w-full"
               onValueChange={setActiveTab}
             >
@@ -729,7 +728,7 @@ export const AuthPage = () => {
                           <div className="flex items-center justify-between">
                             <FormLabel>Password</FormLabel>
                             <Link
-                              to="/forgot-password"
+                              href="/forgot-password"
                               className="text-xs font-medium text-primary hover:underline"
                             >
                               Forgot password?
@@ -1091,7 +1090,7 @@ export const AuthPage = () => {
 
           <CardFooter className="flex justify-center pt-0 pb-6">
             <Link
-              to="/"
+              href="/"
               className="text-sm text-muted-foreground hover:text-foreground flex items-center transition-colors"
             >
               <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
@@ -1103,14 +1102,14 @@ export const AuthPage = () => {
         <p className="text-center mt-6 text-xs text-foreground/60">
           By continuing, you agree to our
           <Link
-            to="/terms-and-conditions"
+            href="/terms-and-conditions"
             className="text-primary hover:underline mx-1"
           >
             Terms of Service
           </Link>
           and
           <Link
-            to="/privacy-policy"
+            href="/privacy-policy"
             className="text-primary hover:underline mx-1"
           >
             Privacy Policy

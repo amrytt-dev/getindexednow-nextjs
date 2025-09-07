@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -7,17 +7,16 @@ interface AuthWrapperProps {
 
 export const AuthWrapper = ({ children }: AuthWrapperProps) => {
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      navigate('/auth', { replace: true, state: { from: location.pathname } });
+      router.replace("/auth");
     } else {
       setLoading(false);
     }
-  }, [navigate, location.pathname]);
+  }, [router]);
 
   if (loading) {
     return (
