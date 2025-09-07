@@ -1,3 +1,446 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Rich text editor content styles */
+.rte-content h1 {
+  font-size: 2.25rem; /* text-4xl */
+  line-height: 2.5rem;
+  font-weight: 700; /* font-bold */
+}
+.rte-content h2 {
+  font-size: 1.875rem; /* text-3xl */
+  line-height: 2.25rem;
+  font-weight: 600; /* font-semibold */
+}
+.rte-content h3 {
+  font-size: 1.5rem; /* text-2xl */
+  line-height: 2rem;
+  font-weight: 600; /* font-semibold */
+}
+.rte-content h1,
+.rte-content h2,
+.rte-content h3 {
+  margin-top: 1.25rem; /* mt-5 */
+  margin-bottom: 0.75rem; /* mb-3 */
+}
+/* #root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+} */
+
+.blog-content h1,
+.rte-content h1 {
+  font-size: 2.25rem; /* text-4xl */
+  line-height: 2.5rem;
+  font-weight: 700; /* font-bold */
+}
+.blog-content h2,
+.rte-content h2 {
+  font-size: 1.875rem; /* text-3xl */
+  line-height: 2.25rem;
+  font-weight: 600; /* font-semibold */
+}
+.blog-content h3,
+.rte-content h3 {
+  font-size: 1.5rem; /* text-2xl */
+  line-height: 2rem;
+  font-weight: 600; /* font-semibold */
+}
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.rte-content h1,
+.rte-content h2,
+.rte-content h3 {
+  margin-top: 1.25rem; /* mt-5 */
+  margin-bottom: 0.75rem; /* mb-3 */
+}
+
+/* Lists */
+.blog-content ul,
+.rte-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0 0.75rem;
+}
+.blog-content ol,
+.rte-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0 0.75rem;
+}
+.blog-content li,
+.rte-content li {
+  margin: 0.25rem 0;
+}
+
+/* Blockquote */
+.blog-content blockquote,
+.rte-content blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(0, 0, 0, 0.8);
+  font-style: italic;
+}
+
+/* Code and pre */
+.blog-content code,
+.rte-content code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.95em;
+}
+.blog-content pre,
+.rte-content pre {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow: auto;
+  margin: 1rem 0;
+}
+.blog-content pre code,
+.rte-content pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Links */
+.blog-content a,
+.rte-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+/* Horizontal rule */
+.blog-content hr,
+.rte-content hr {
+  border: 0;
+  border-top: 1px solid hsl(var(--border));
+  margin: 1.25rem 0;
+}
+
+/* Enable smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ensure sticky positioning works properly */
+.sticky {
+  position: sticky;
+  top: 0;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Google Material shadow styles */
+.shadow-google-sm {
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+.shadow-google-md {
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 2px 6px 2px rgba(60, 64, 67, 0.15);
+}
+
+.shadow-google-lg {
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
+    0 4px 8px 3px rgba(60, 64, 67, 0.15);
+}
+
+/* Google colors */
+.text-google-blue {
+  color: #4285f4;
+}
+
+.text-google-red {
+  color: #ea4335;
+}
+
+.text-google-yellow {
+  color: #fbbc04;
+}
+
+.text-google-green {
+  color: #34a853;
+}
+
+.bg-google-blue {
+  background-color: #4285f4;
+}
+
+.bg-google-red {
+  background-color: #ea4335;
+}
+
+.bg-google-yellow {
+  background-color: #fbbc04;
+}
+
+.bg-google-green {
+  background-color: #34a853;
+}
+
+/* Google-style button */
+.btn-google {
+  border-radius: 24px;
+  /*font-family: 'Product Sans', 'Garet', system-ui, sans-serif;*/
+  font-weight: 500;
+  letter-spacing: 0.25px;
+  text-transform: none;
+  transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-google:hover {
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+/* Google Material style card */
+.card-google {
+  border-radius: 8px;
+  border: 1px solid #dadce0;
+  overflow: hidden;
+}
+
+/* Improved button hover states */
+.btn-hover-safe {
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-hover-safe:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode hover styles removed - forcing light mode only */
+/*
+.dark .btn-hover-safe:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+*/
+
+/* Admin panel specific hover improvements */
+.admin-nav-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.admin-nav-hover:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+/* Dark mode admin nav hover removed - forcing light mode only */
+/*
+.dark .admin-nav-hover:hover {
+  background-color: hsl(217.2 32.6% 17.5%);
+  color: hsl(210 40% 98%);
+}
+*/
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+/* Rich text editor content styles */
+.rte-content h1 {
+  font-size: 2.25rem; /* text-4xl */
+  line-height: 2.5rem;
+  font-weight: 700; /* font-bold */
+}
+.rte-content h2 {
+  font-size: 1.875rem; /* text-3xl */
+  line-height: 2.25rem;
+  font-weight: 600; /* font-semibold */
+}
+.rte-content h3 {
+  font-size: 1.5rem; /* text-2xl */
+  line-height: 2rem;
+  font-weight: 600; /* font-semibold */
+}
+.rte-content h1,
+.rte-content h2,
+.rte-content h3 {
+  margin-top: 1.25rem; /* mt-5 */
+  margin-bottom: 0.75rem; /* mb-3 */
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 20%;
+
+    /* Google Blue */
+    --primary: 217 89% 61%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Google Green */
+    --secondary: 142 76% 36%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 0 0% 20%;
+
+    /* Google Red */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 89% 61%;
+
+    /* Google brand gradients */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(217 89% 61%),
+      hsl(142 76% 36%)
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(217 89% 61%) 0%,
+      hsl(142 76% 36%) 100%
+    );
+
+    /* Shadows */
+    --shadow-soft: 0 2px 8px -2px hsl(217 89% 61% / 0.1);
+    --shadow-medium: 0 4px 16px -4px hsl(217 89% 61% / 0.15);
+    --shadow-strong: 0 8px 32px -8px hsl(217 89% 61% / 0.25);
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Google Yellow */
+    --warning: 45 100% 51%;
+    --warning-foreground: 0 0% 20%;
+
+    /* Material Design Shadows */
+    --shadow-sm: 0 1px 2px rgba(60, 64, 67, 0.3);
+    --shadow-md: 0 1px 3px rgba(60, 64, 67, 0.3),
+      0 2px 6px rgba(60, 64, 67, 0.15);
+    --shadow-lg: 0 1px 3px rgba(60, 64, 67, 0.3),
+      0 4px 8px rgba(60, 64, 67, 0.15);
+  }
+
+  /* Dark mode styles removed - forcing light mode only */
+  /*
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+  */
+}
