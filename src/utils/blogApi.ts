@@ -1,7 +1,8 @@
-import { fetchWithAuth } from './fetchWithAuth';
+import { fetchWithAuth } from "./fetchWithAuth";
 
-const PUBLIC_API_BASE = (import.meta as any).env?.VITE_API_URL || '';
-const withPublicBase = (path: string) => `${PUBLIC_API_BASE.replace(/\/$/, '')}${path}`;
+const PUBLIC_API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const withPublicBase = (path: string) =>
+  `${PUBLIC_API_BASE.replace(/\/$/, "")}${path}`;
 
 export interface BlogPost {
   id: string;
@@ -11,7 +12,7 @@ export interface BlogPost {
   content: string;
   coverImage: string;
   seo?: any;
-  status: 'draft' | 'published' | 'archived';
+  status: "draft" | "published" | "archived";
   featured: boolean;
   popular: boolean;
   readTime: number;
@@ -51,7 +52,7 @@ export interface BlogQueryParams {
   category?: string;
   tag?: string;
   author?: string;
-  status?: 'published' | 'draft' | 'archived';
+  status?: "published" | "draft" | "archived";
   featured?: boolean;
   popular?: boolean;
 }
@@ -84,56 +85,60 @@ export const blogApi = {
   // Get all blog posts with filtering and pagination
   getPosts: async (params: BlogQueryParams = {}): Promise<BlogResponse> => {
     const searchParams = new URLSearchParams();
-    
-    if (params.page) searchParams.append('page', params.page.toString());
-    if (params.limit) searchParams.append('limit', params.limit.toString());
-    if (params.search) searchParams.append('search', params.search);
-    if (params.category) searchParams.append('category', params.category);
-    if (params.tag) searchParams.append('tag', params.tag);
-    if (params.author) searchParams.append('author', params.author);
-    if (params.status) searchParams.append('status', params.status);
-    if (params.featured !== undefined) searchParams.append('featured', params.featured.toString());
-    if (params.popular !== undefined) searchParams.append('popular', params.popular.toString());
 
-    const response = await fetch(withPublicBase(`/api/blog/posts?${searchParams.toString()}`));
+    if (params.page) searchParams.append("page", params.page.toString());
+    if (params.limit) searchParams.append("limit", params.limit.toString());
+    if (params.search) searchParams.append("search", params.search);
+    if (params.category) searchParams.append("category", params.category);
+    if (params.tag) searchParams.append("tag", params.tag);
+    if (params.author) searchParams.append("author", params.author);
+    if (params.status) searchParams.append("status", params.status);
+    if (params.featured !== undefined)
+      searchParams.append("featured", params.featured.toString());
+    if (params.popular !== undefined)
+      searchParams.append("popular", params.popular.toString());
+
+    const response = await fetch(
+      withPublicBase(`/api/blog/posts?${searchParams.toString()}`)
+    );
     if (!response.ok) {
-      throw new Error('Failed to fetch blog posts');
+      throw new Error("Failed to fetch blog posts");
     }
     return response.json();
   },
 
   // Get featured posts for banner
   getFeaturedPosts: async (): Promise<{ posts: BlogPost[] }> => {
-    const response = await fetch(withPublicBase('/api/blog/featured'));
+    const response = await fetch(withPublicBase("/api/blog/featured"));
     if (!response.ok) {
-      throw new Error('Failed to fetch featured posts');
+      throw new Error("Failed to fetch featured posts");
     }
     return response.json();
   },
 
   // Get popular posts
   getPopularPosts: async (): Promise<{ posts: BlogPost[] }> => {
-    const response = await fetch(withPublicBase('/api/blog/popular'));
+    const response = await fetch(withPublicBase("/api/blog/popular"));
     if (!response.ok) {
-      throw new Error('Failed to fetch popular posts');
+      throw new Error("Failed to fetch popular posts");
     }
     return response.json();
   },
 
   // Get categories with post counts
   getCategories: async (): Promise<CategoriesResponse> => {
-    const response = await fetch(withPublicBase('/api/blog/categories'));
+    const response = await fetch(withPublicBase("/api/blog/categories"));
     if (!response.ok) {
-      throw new Error('Failed to fetch categories');
+      throw new Error("Failed to fetch categories");
     }
     return response.json();
   },
 
   // Get tags
   getTags: async (): Promise<TagsResponse> => {
-    const response = await fetch(withPublicBase('/api/blog/tags'));
+    const response = await fetch(withPublicBase("/api/blog/tags"));
     if (!response.ok) {
-      throw new Error('Failed to fetch tags');
+      throw new Error("Failed to fetch tags");
     }
     return response.json();
   },
@@ -142,7 +147,7 @@ export const blogApi = {
   getPostBySlug: async (slug: string): Promise<SinglePostResponse> => {
     const response = await fetch(withPublicBase(`/api/blog/posts/${slug}`));
     if (!response.ok) {
-      throw new Error('Blog post not found');
+      throw new Error("Blog post not found");
     }
     return response.json();
   },
@@ -153,11 +158,11 @@ export const adminBlogApi = {
   // Get all blog posts (admin view - includes all statuses)
   getPosts: async (params: BlogQueryParams = {}): Promise<BlogResponse> => {
     const searchParams = new URLSearchParams();
-    
-    if (params.page) searchParams.append('page', params.page.toString());
-    if (params.limit) searchParams.append('limit', params.limit.toString());
-    if (params.search) searchParams.append('search', params.search);
-    if (params.status) searchParams.append('status', params.status);
+
+    if (params.page) searchParams.append("page", params.page.toString());
+    if (params.limit) searchParams.append("limit", params.limit.toString());
+    if (params.search) searchParams.append("search", params.search);
+    if (params.status) searchParams.append("status", params.status);
 
     return await fetchWithAuth(`/admin/blog/posts?${searchParams.toString()}`);
   },
@@ -168,22 +173,47 @@ export const adminBlogApi = {
   },
 
   // Create blog post
-  createPost: async (data: Omit<BlogPost, 'id' | 'createdAt' | 'updatedAt' | 'viewCount' | 'category' | 'tags' | 'author'> & { categoryId: string; tagIds: string[] }): Promise<SinglePostResponse> => {
-    return await fetchWithAuth('/admin/blog/posts', {
-      method: 'POST',
+  createPost: async (
+    data: Omit<
+      BlogPost,
+      | "id"
+      | "createdAt"
+      | "updatedAt"
+      | "viewCount"
+      | "category"
+      | "tags"
+      | "author"
+    > & { categoryId: string; tagIds: string[] }
+  ): Promise<SinglePostResponse> => {
+    return await fetchWithAuth("/admin/blog/posts", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
   },
 
   // Update blog post
-  updatePost: async (id: string, data: Partial<Omit<BlogPost, 'id' | 'createdAt' | 'updatedAt' | 'viewCount' | 'category' | 'tags' | 'author'> & { categoryId?: string; tagIds?: string[] }>): Promise<SinglePostResponse> => {
+  updatePost: async (
+    id: string,
+    data: Partial<
+      Omit<
+        BlogPost,
+        | "id"
+        | "createdAt"
+        | "updatedAt"
+        | "viewCount"
+        | "category"
+        | "tags"
+        | "author"
+      > & { categoryId?: string; tagIds?: string[] }
+    >
+  ): Promise<SinglePostResponse> => {
     return await fetchWithAuth(`/admin/blog/posts/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
@@ -192,13 +222,13 @@ export const adminBlogApi = {
   // Delete blog post
   deletePost: async (id: string): Promise<{ message: string }> => {
     return await fetchWithAuth(`/admin/blog/posts/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   },
 
   // Get all categories
   getCategories: async (): Promise<CategoriesResponse> => {
-    const res: any = await fetchWithAuth('/admin/blog/categories');
+    const res: any = await fetchWithAuth("/admin/blog/categories");
     const mapped = Array.isArray(res?.categories)
       ? res.categories.map((c: any) => ({
           id: c.id,
@@ -212,22 +242,29 @@ export const adminBlogApi = {
   },
 
   // Create category
-  createCategory: async (data: { name: string; slug: string; description?: string }): Promise<{ category: BlogCategory }> => {
-    return await fetchWithAuth('/admin/blog/categories', {
-      method: 'POST',
+  createCategory: async (data: {
+    name: string;
+    slug: string;
+    description?: string;
+  }): Promise<{ category: BlogCategory }> => {
+    return await fetchWithAuth("/admin/blog/categories", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
   },
 
   // Update category
-  updateCategory: async (id: string, data: { name: string; slug: string; description?: string }): Promise<{ category: BlogCategory }> => {
+  updateCategory: async (
+    id: string,
+    data: { name: string; slug: string; description?: string }
+  ): Promise<{ category: BlogCategory }> => {
     return await fetchWithAuth(`/admin/blog/categories/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
@@ -236,13 +273,13 @@ export const adminBlogApi = {
   // Delete category
   deleteCategory: async (id: string): Promise<{ message: string }> => {
     return await fetchWithAuth(`/admin/blog/categories/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   },
 
   // Get all tags
   getTags: async (): Promise<TagsResponse> => {
-    const res: any = await fetchWithAuth('/admin/blog/tags');
+    const res: any = await fetchWithAuth("/admin/blog/tags");
     const mapped = Array.isArray(res?.tags)
       ? res.tags.map((t: any) => ({
           id: t.id,
@@ -255,22 +292,28 @@ export const adminBlogApi = {
   },
 
   // Create tag
-  createTag: async (data: { name: string; slug: string }): Promise<{ tag: BlogTag }> => {
-    return await fetchWithAuth('/admin/blog/tags', {
-      method: 'POST',
+  createTag: async (data: {
+    name: string;
+    slug: string;
+  }): Promise<{ tag: BlogTag }> => {
+    return await fetchWithAuth("/admin/blog/tags", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
   },
 
   // Update tag
-  updateTag: async (id: string, data: { name: string; slug: string }): Promise<{ tag: BlogTag }> => {
+  updateTag: async (
+    id: string,
+    data: { name: string; slug: string }
+  ): Promise<{ tag: BlogTag }> => {
     return await fetchWithAuth(`/admin/blog/tags/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
@@ -279,25 +322,25 @@ export const adminBlogApi = {
   // Delete tag
   deleteTag: async (id: string): Promise<{ message: string }> => {
     return await fetchWithAuth(`/admin/blog/tags/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   },
 
   // Upload image
   uploadImage: async (file: File): Promise<{ url: string }> => {
     const form = new FormData();
-    form.append('file', file);
-    return await fetchWithAuth('/admin/blog/uploads', {
-      method: 'POST',
+    form.append("file", file);
+    return await fetchWithAuth("/admin/blog/uploads", {
+      method: "POST",
       body: form as any,
     });
   },
 
   // Delete image by url
   deleteImage: async (url: string): Promise<{ ok: true }> => {
-    return await fetchWithAuth('/admin/blog/uploads', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+    return await fetchWithAuth("/admin/blog/uploads", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     });
   },
