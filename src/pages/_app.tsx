@@ -34,16 +34,17 @@ export default function App({ Component, pageProps }: AppProps) {
     pathname.startsWith("/plans-billing") ||
     pathname.startsWith("/user/setting");
 
-  const showHeaderFooter = !isAdminRoute && !isAuthRoute && !isAppShellRoute;
+  const showPublicHeader = !isAdminRoute && !isAuthRoute && !isAppShellRoute;
+  const showFooter = !isAdminRoute && !isAuthRoute;
 
   return (
     <QueryClientProvider client={queryClient}>
       <UserProvider>
         <UrlProgressProvider>
           <PendingTasksProvider>
-            {showHeaderFooter && <Header />}
+            {showPublicHeader && <Header />}
             <Component {...pageProps} />
-            {showHeaderFooter && <Footer />}
+            {showFooter && <Footer />}
           </PendingTasksProvider>
         </UrlProgressProvider>
       </UserProvider>
