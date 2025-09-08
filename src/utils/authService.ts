@@ -1,4 +1,4 @@
-import { toast } from '@/hooks/use-toast';
+import { toast } from "@/hooks/use-toast";
 
 export interface TokenPayload {
   userId: string;
@@ -29,7 +29,7 @@ class AuthService {
    * Get token from localStorage
    */
   public getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem("token");
   }
 
   /**
@@ -37,9 +37,9 @@ class AuthService {
    */
   public setToken(token: string | null): void {
     if (token) {
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
     } else {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
     }
   }
 
@@ -48,15 +48,15 @@ class AuthService {
    */
   public decodeToken(token: string): TokenPayload | null {
     try {
-      const tokenParts = token.split('.');
+      const tokenParts = token.split(".");
       if (tokenParts.length !== 3) {
         return null;
       }
-      
+
       const payload = JSON.parse(atob(tokenParts[1]));
       return payload;
     } catch (error) {
-      console.error('Failed to decode token:', error);
+      console.error("Failed to decode token:", error);
       return null;
     }
   }
@@ -85,7 +85,7 @@ class AuthService {
 
     const currentTime = Math.floor(Date.now() / 1000);
     const timeUntilExpiry = payload.exp - currentTime;
-    return timeUntilExpiry < (minutes * 60);
+    return timeUntilExpiry < minutes * 60;
   }
 
   /**
@@ -93,17 +93,22 @@ class AuthService {
    */
   public async validateTokenWithServer(token: string): Promise<boolean> {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/validate-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+        }/api/auth/validate-token`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       return response.ok;
     } catch (error) {
-      console.error('Token validation failed:', error);
+      console.error("Token validation failed:", error);
       return false;
     }
   }
@@ -111,43 +116,45 @@ class AuthService {
   /**
    * Force logout and clear all auth data
    */
-  public logout(reason: string = 'Session expired'): void {
-    console.log('Logging out user:', reason);
-    
+  public logout(reason: string = "Session expired"): void {
+    console.log("Logging out user:", reason);
+
     // Clear token
     this.setToken(null);
-    
+
     // Clear any other auth-related data
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem("refreshToken");
     sessionStorage.clear();
-    
+
     // Clear any cached data
     const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith('task-refresh-') || key.startsWith('query-')) {
+    keys.forEach((key) => {
+      if (key.startsWith("task-refresh-") || key.startsWith("query-")) {
         localStorage.removeItem(key);
       }
     });
 
     // Show logout notification (neutral, bottom-center via viewport)
     try {
-      const lower = (reason || '').toLowerCase();
-      const description = lower.includes('expired') ? 'You have been logged out.' : reason || 'You have been logged out.';
+      const lower = (reason || "").toLowerCase();
+      const description = lower.includes("expired")
+        ? "You have been logged out."
+        : reason || "You have been logged out.";
       toast({
-        title: 'Logged out',
+        title: "Logged out",
         description,
-        variant: 'default',
+        variant: "default",
       });
     } catch (_) {
       // no-op if toast system unavailable
     }
 
     // Execute logout callbacks
-    this.logoutCallbacks.forEach(callback => callback());
+    this.logoutCallbacks.forEach((callback) => callback());
 
     // Redirect to home page shortly after showing toast
     setTimeout(() => {
-      window.location.href = '/auth';
+      window.location.href = "/auth";
     }, 500);
   }
 
@@ -193,23 +200,23 @@ class AuthService {
    */
   private async checkTokenValidity(): Promise<void> {
     const token = this.getToken();
-    
+
     if (!token) {
       return;
     }
 
     // Check if token is expired
     if (this.isTokenExpired(token)) {
-      this.logout('Your session has expired. Please log in again.');
+      this.logout("Your session has expired. Please log in again.");
       return;
     }
 
     // Check if token is expiring soon
     if (this.isTokenExpiringSoon(token)) {
       toast({
-        title: 'Session Expiring Soon',
-        description: 'Your session will expire in 5 minutes',
-        variant: 'default',
+        title: "Session Expiring Soon",
+        description: "Your session will expire in 5 minutes",
+        variant: "default",
       });
     }
 
@@ -223,7 +230,9 @@ class AuthService {
   /**
    * Get user info from token
    */
-  public getUserFromToken(token: string): { userId: string; email: string; isAdmin?: boolean } | null {
+  public getUserFromToken(
+    token: string
+  ): { userId: string; email: string; isAdmin?: boolean } | null {
     const payload = this.decodeToken(token);
     if (!payload) {
       return null;
@@ -253,4 +262,4 @@ class AuthService {
 export const authService = AuthService.getInstance();
 
 // Export class for testing
-export { AuthService }; 
+export { AuthService };

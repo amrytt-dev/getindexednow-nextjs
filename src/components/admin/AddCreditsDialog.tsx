@@ -1,14 +1,19 @@
-
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from '@/hooks/use-toast';
-import { Plus, Minus } from 'lucide-react';
-import { UserData } from '@/types/admin';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { toast } from "@/hooks/use-toast";
+import { Plus, Minus } from "lucide-react";
+import { UserData } from "@/types/admin";
 
 interface AddCreditsDialogProps {
   open: boolean;
@@ -17,17 +22,22 @@ interface AddCreditsDialogProps {
   onSuccess: () => void;
 }
 
-export const AddCreditsDialog = ({ open, onOpenChange, user, onSuccess }: AddCreditsDialogProps) => {
-  const [credits, setCredits] = useState('');
-  const [reason, setReason] = useState('');
-  const [expiryDays, setExpiryDays] = useState('');
+export const AddCreditsDialog = ({
+  open,
+  onOpenChange,
+  user,
+  onSuccess,
+}: AddCreditsDialogProps) => {
+  const [credits, setCredits] = useState("");
+  const [reason, setReason] = useState("");
+  const [expiryDays, setExpiryDays] = useState("");
   // Remove operation state
   // const [operation, setOperation] = useState<'add' | 'remove'>('add');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) return;
 
     const creditAmount = parseInt(credits) || 0;
@@ -46,29 +56,32 @@ export const AddCreditsDialog = ({ open, onOpenChange, user, onSuccess }: AddCre
       // Only add operation
       const finalCreditAmount = creditAmount;
 
-      const backendBaseUrl = import.meta.env.VITE_API_URL || '';
-      const response = await fetch(`${backendBaseUrl}/api/admin/users/${user.user_id}/add-credit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          amount: finalCreditAmount,
-          reason: reason || undefined,
-          expiryDays: expiryDays ? parseInt(expiryDays) : undefined,
-        }),
-      });
+      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const response = await fetch(
+        `${backendBaseUrl}/api/admin/users/${user.user_id}/add-credit`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            amount: finalCreditAmount,
+            reason: reason || undefined,
+            expiryDays: expiryDays ? parseInt(expiryDays) : undefined,
+          }),
+        }
+      );
 
       const result = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to add credits');
+        throw new Error(result.error || "Failed to add credits");
       }
 
       // Handle the new response structure
       if (result.code !== 0) {
-        throw new Error(result.error || 'Failed to add credits');
+        throw new Error(result.error || "Failed to add credits");
       }
 
       toast({
@@ -77,18 +90,21 @@ export const AddCreditsDialog = ({ open, onOpenChange, user, onSuccess }: AddCre
       });
 
       // Reset form
-      setCredits('');
-      setReason('');
-      setExpiryDays('');
+      setCredits("");
+      setReason("");
+      setExpiryDays("");
       // setOperation('add');
-      
+
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      console.error('Error managing credits:', error);
+      console.error("Error managing credits:", error);
       toast({
         title: "Error managing credits",
-        description: error instanceof Error ? error.message : "Failed to manage credits. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to manage credits. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -110,10 +126,14 @@ export const AddCreditsDialog = ({ open, onOpenChange, user, onSuccess }: AddCre
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="bg-muted/50 p-3 rounded-lg">
               <div className="text-sm font-medium text-foreground">
-                {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email}
+                {user.firstName && user.lastName
+                  ? `${user.firstName} ${user.lastName}`
+                  : user.email}
               </div>
               {user.firstName && user.lastName && (
-                <div className="text-xs text-muted-foreground">{user.email}</div>
+                <div className="text-xs text-muted-foreground">
+                  {user.email}
+                </div>
               )}
               <div className="text-xs text-muted-foreground">
                 Current monthly credits: {user.monthly_credits || 0}
@@ -171,7 +191,7 @@ export const AddCreditsDialog = ({ open, onOpenChange, user, onSuccess }: AddCre
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Processing...' : 'Add Credits'}
+                {loading ? "Processing..." : "Add Credits"}
               </Button>
             </DialogFooter>
           </form>

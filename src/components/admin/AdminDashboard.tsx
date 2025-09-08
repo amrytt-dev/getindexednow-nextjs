@@ -150,10 +150,12 @@ export const AdminDashboard = () => {
         totalUsers: data.result?.totalUsers || 0,
         totalSubscribedUsers: data.result?.totalSubscribedUsers || 0,
         totalRevenue: (data.result?.totalRevenue || 0) / 100,
-        paymentHistory: (data.result?.paymentHistory || []).map((item) => ({
-          ...item,
-          amount: item.amount / 100,
-        })),
+        paymentHistory: (data.result?.paymentHistory || []).map(
+          (item: any) => ({
+            ...item,
+            amount: item.amount / 100,
+          })
+        ),
       };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -218,7 +220,7 @@ export const AdminDashboard = () => {
     enabled: true,
   });
 
-  const { data: totalRevenueData } = useQuery({
+  const { data: totalRevenueData }: any = useQuery({
     queryKey: [
       "admin-total-revenue",
       totalRevenueFilter,
