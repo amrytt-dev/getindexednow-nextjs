@@ -8,6 +8,8 @@ export interface TokenPayload {
   iat: number;
 }
 
+import { getFirebaseAuth, initFirebaseClient } from "./firebaseClient";
+
 class AuthService {
   private static instance: AuthService;
   private logoutCallbacks: (() => void)[] = [];
@@ -25,23 +27,20 @@ class AuthService {
     return AuthService.instance;
   }
 
-  /**
-   * Get token from localStorage
-   */
-  public getToken(): string | null {
-    return localStorage.getItem("token");
+  public async getToken(): Promise<string | null> {
+    try {
+      const auth = getFirebaseAuth();
+      if (auth && auth.currentUser) {
+        // Use cached token; Firebase refreshes automatically in background
+        const token = await auth.currentUser.getIdToken();
+        return token;
+      }
+    } catch (_) {}
+
+    return null;
   }
 
-  /**
-   * Set token in localStorage
-   */
-  public setToken(token: string | null): void {
-    if (token) {
-      localStorage.setItem("token", token);
-    } else {
-      localStorage.removeItem("token");
-    }
-  }
+  public setToken(_: string | null): void {}
 
   /**
    * Decode JWT token without verification (client-side only)
@@ -179,7 +178,25 @@ class AuthService {
    * Start token validation monitoring
    */
   private startTokenValidation(): void {
-    // Check token every 30 seconds
+    // Initialize Firebase client in browser
+    if (typeof window !== "undefined") {
+      initFirebaseClient();
+      try {
+        const auth = getFirebaseAuth();
+        if (auth) {
+          // Listen for ID token changes
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const { onIdTokenChanged } = require("firebase/auth");
+          onIdTokenChanged(auth, async (user: any) => {
+            // no-op; token is retrieved on demand via getToken()
+          });
+        }
+      } catch (_) {
+        // ignore if firebase unavailable
+      }
+    }
+
+    // Also run legacy validation every 30 seconds
     this.tokenValidationInterval = setInterval(() => {
       this.checkTokenValidity();
     }, 30000);
@@ -199,7 +216,7 @@ class AuthService {
    * Check if current token is valid
    */
   private async checkTokenValidity(): Promise<void> {
-    const token = this.getToken();
+    const token = await this.getToken();
 
     if (!token) {
       return;
@@ -249,12 +266,13 @@ class AuthService {
    * Check if user is authenticated
    */
   public isAuthenticated(): boolean {
-    const token = this.getToken();
-    if (!token) {
+    // For Firebase-based auth, assume authenticated if a currentUser exists
+    try {
+      const auth = getFirebaseAuth();
+      return !!auth?.currentUser;
+    } catch (_) {
       return false;
     }
-
-    return !this.isTokenExpired(token);
   }
 }
 

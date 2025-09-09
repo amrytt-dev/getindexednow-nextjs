@@ -4,33 +4,21 @@ import {
   NotificationActionResponse,
   CreateNotificationData,
 } from "@/types/notification";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
 
 class NotificationApiService {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const token = localStorage.getItem("token");
-
-    const response = await fetch(
-      `${API_BASE_URL}/api/notifications${endpoint}`,
-      {
-        ...options,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          ...options.headers,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
+    const body = options.body;
+    const method = options.method || (body ? "POST" : "GET");
+    return await fetchWithAuth<T>(`/notifications${endpoint}`, {
+      method,
+      body:
+        typeof body === "string" || body instanceof FormData ? body : undefined,
+      headers: options.headers,
+    });
   }
 
   // Get all notifications for the current user

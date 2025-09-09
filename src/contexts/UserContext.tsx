@@ -9,6 +9,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { io as socketIOClient, Socket } from "socket.io-client";
 import { toast } from "@/hooks/use-toast";
 import { notificationKeys } from "@/hooks/useNotifications";
+import { getFirebaseAuth, initFirebaseClient } from "@/utils/firebaseClient";
+import { onIdTokenChanged } from "firebase/auth";
 
 // Dynamic import for authService to avoid mixed import warnings
 let authServiceModule: any = null;
@@ -56,7 +58,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
   useEffect(() => {
     const initializeToken = async () => {
       const { authService } = await loadAuthService();
-      setTokenState(authService.getToken());
+      setTokenState(await authService.getToken());
     };
     initializeToken();
   }, []);
@@ -101,23 +103,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
         console.log(
           "UserContext - No user ID in response, trying to extract from JWT token"
         );
-        try {
-          // Decode JWT token to get user ID
-          const tokenParts = token.split(".");
-          if (tokenParts.length === 3) {
-            const payload = JSON.parse(atob(tokenParts[1]));
-            console.log("UserContext - JWT payload:", payload);
-            if (payload.userId || payload.sub) {
-              userData.id = payload.userId || payload.sub;
-              console.log(
-                "UserContext - Extracted user ID from JWT:",
-                userData.id
-              );
-            }
-          }
-        } catch (jwtError) {
-          console.error("UserContext - Failed to decode JWT token:", jwtError);
-        }
+        // With Firebase tokens, the backend returns the correct user id; skip decoding
       }
 
       // If still no user ID, use email as a fallback identifier
@@ -188,20 +174,32 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     setupAuthCallbacks();
   }, [queryClient]);
 
-  // Initialize user context on mount
+  // Initialize user context on mount and listen for Firebase auth state
   useEffect(() => {
-    // Check if we have a token on initial load
-    const initializeContext = async () => {
-      const { authService } = await loadAuthService();
-      const initialToken = authService.getToken();
-      if (initialToken && !token) {
-        setTokenState(initialToken);
+    // Ensure Firebase is initialized in the browser
+    initFirebaseClient();
+    const auth = getFirebaseAuth();
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Ensure UI waits for profile load
+        setLoading(true);
+        const freshToken = await firebaseUser.getIdToken();
+        setTokenState(freshToken);
       } else {
-        // If no token, set loading to false immediately
+        setTokenState(null);
+        setUser(null);
         setLoading(false);
       }
+    });
+
+    return () => {
+      unsubscribe();
     };
-    initializeContext();
   }, []);
 
   // Fetch user profile when token changes

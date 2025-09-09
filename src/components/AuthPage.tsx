@@ -42,6 +42,12 @@ import {
   checkEnvironmentVariables,
   testEnvironmentVariables,
 } from "@/utils/envChecker";
+import { getFirebaseAuth } from "@/utils/firebaseClient";
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 
 // Add Google One Tap types for TypeScript
 declare global {
@@ -342,7 +348,21 @@ export const AuthPage = () => {
           data.error?.["_errors"]?.[0] || data.error || "Registration failed"
         );
       }
-      await setToken(data.token);
+      // After backend registration, sign in to Firebase to obtain ID token
+      try {
+        const auth = getFirebaseAuth();
+        if (auth) {
+          const cred = await signInWithEmailAndPassword(
+            auth,
+            values.email,
+            values.password
+          );
+          const idToken = await cred.user.getIdToken();
+          await setToken(idToken);
+        }
+      } catch (e) {
+        console.error("Firebase sign-in after register failed:", e);
+      }
       toast({
         title: "Account created",
         description:
@@ -414,7 +434,21 @@ export const AuthPage = () => {
         return;
       }
 
-      await setToken(data.token);
+      // Use Firebase email/password sign-in to obtain a Firebase ID token
+      try {
+        const auth = getFirebaseAuth();
+        if (auth) {
+          const cred = await signInWithEmailAndPassword(
+            auth,
+            values.email,
+            values.password
+          );
+          const idToken = await cred.user.getIdToken();
+          await setToken(idToken);
+        }
+      } catch (e) {
+        console.error("Firebase sign-in failed:", e);
+      }
       toast({
         title: "Login successful",
         description: "You are now signed in.",
@@ -433,8 +467,37 @@ export const AuthPage = () => {
     }
   };
 
-  const handleGoogleAuth = () => {
-    window.location.href = `${BASE_URL}/api/auth/google`;
+  const handleGoogleAuth = async () => {
+    try {
+      const auth = getFirebaseAuth();
+      if (!auth) {
+        toast({
+          title: "Google sign-in unavailable",
+          description: "Firebase is not configured on the client.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+
+      const cred = await signInWithPopup(auth, provider);
+      const idToken = await cred.user.getIdToken();
+      await setToken(idToken);
+      toast({
+        title: "Login successful",
+        description: "You are now signed in.",
+      });
+      handleSuccessfulLogin();
+    } catch (error: any) {
+      console.error("Google sign-in failed:", error);
+      toast({
+        title: "Google sign-in failed",
+        description: error?.message || "Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Function to handle reCAPTCHA interaction and clear errors

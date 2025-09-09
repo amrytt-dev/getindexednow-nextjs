@@ -51,16 +51,11 @@ export async function fetchWithAuth<T = any>(
   } = options;
 
   // Get token from auth service
-  const { authService } = await loadAuthService();
-  const token = authService.getToken();
+  const { getAuthHeader } = await import("./authToken");
+  const authHeader = await getAuthHeader();
 
   // Validate token if required and not skipped
-  if (requireAuth && token && !skipTokenValidation) {
-    if (authService.isTokenExpired(token)) {
-      authService.logout("Your session has expired. Please log in again.");
-      throw new ApiError("Token expired", 401, "Unauthorized");
-    }
-  }
+  // Skipping client-side token expiry checks to let Firebase/Backend validate
 
   // Prepare headers
   const requestHeaders: Record<string, string> = {
@@ -69,8 +64,8 @@ export async function fetchWithAuth<T = any>(
   };
 
   // Add authorization header if required and token exists
-  if (requireAuth && token) {
-    requestHeaders["Authorization"] = `Bearer ${token}`;
+  if (requireAuth && authHeader.Authorization) {
+    requestHeaders["Authorization"] = authHeader.Authorization;
   }
 
   // Remove Content-Type if body is FormData
@@ -87,9 +82,6 @@ export async function fetchWithAuth<T = any>(
     // Handle 401 Unauthorized responses
     if (response.status === 401) {
       if (redirectOnUnauthorized) {
-        // Use auth service to handle logout
-        const { authService } = await loadAuthService();
-        authService.logout("Your session is invalid. Please log in again.");
         throw new ApiError(
           "Unauthorized - Redirecting to login",
           401,
@@ -223,7 +215,7 @@ export async function downloadWithAuth(
 
   // Get token from auth service
   const { authService } = await loadAuthService();
-  const token = authService.getToken();
+  const token = await authService.getToken();
 
   // Validate token if required and not skipped
   if (requireAuth && token && !skipTokenValidation) {

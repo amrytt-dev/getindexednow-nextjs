@@ -5,13 +5,19 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "@/contexts/UserContext";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { setupHttpInterceptor } from "@/utils/httpInterceptor";
+import { initFirebaseClient } from "@/utils/firebaseClient";
 import { UrlProgressProvider } from "@/contexts/UrlProgressContext";
 import { PendingTasksProvider } from "@/contexts/PendingTasksContext";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const queryClient = useMemo(() => new QueryClient(), []);
+  useEffect(() => {
+    initFirebaseClient();
+    setupHttpInterceptor();
+  }, []);
 
   const pathname = router.pathname || "";
   const isAdminRoute = pathname.startsWith("/admin");

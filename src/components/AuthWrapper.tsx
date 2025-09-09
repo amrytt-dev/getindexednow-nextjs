@@ -1,24 +1,26 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useUser } from "@/contexts/UserContext";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
 }
 
 export const AuthWrapper = ({ children }: AuthWrapperProps) => {
-  const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
   const router = useRouter();
+  const { user, loading: userLoading } = useUser();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (userLoading) return;
+    if (!user) {
       router.replace("/auth");
-    } else {
-      setLoading(false);
+      return;
     }
-  }, [router]);
+    setReady(true);
+  }, [user, userLoading, router]);
 
-  if (loading) {
+  if (userLoading || !ready) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
