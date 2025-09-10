@@ -342,27 +342,14 @@ export const AuthPage = () => {
           data.error?.["_errors"]?.[0] || data.error || "Registration failed"
         );
       }
-      // After backend registration, sign in to Firebase to obtain ID token
-      try {
-        const auth = getFirebaseAuth();
-        if (auth) {
-          const cred = await signInWithEmailAndPassword(
-            auth,
-            values.email,
-            values.password
-          );
-          const idToken = await cred.user.getIdToken();
-          await setToken(idToken);
-        }
-      } catch (e) {
-        console.error("Firebase sign-in after register failed:", e);
-      }
       toast({
         title: "Account created",
         description:
           "You have successfully registered. Please check your email to verify your account before logging in",
       });
-      handleSuccessfulLogin();
+      // Switch to sign in tab after successful registration
+      setActiveTab("signin");
+      // Don't auto-login after email/password registration - user must verify email first
     } catch (error: any) {
       toast({
         title: "Registration failed",

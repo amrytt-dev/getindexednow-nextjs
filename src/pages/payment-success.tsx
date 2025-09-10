@@ -116,7 +116,7 @@ export default function PaymentSuccess() {
         }
 
         const response = await getWithAuth(
-          `/user/subscription/confirm?session_id=${sessionId}&plan_id=${planId}&action=upgrade`
+          `/user/subscription/confirm?sessionId=${sessionId}&planId=${planId}&action=upgrade`
         );
 
         if (response.success) {
