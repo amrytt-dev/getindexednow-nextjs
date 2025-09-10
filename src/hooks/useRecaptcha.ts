@@ -80,15 +80,42 @@ export const useRecaptcha = () => {
       }
 
       return new Promise<number>((resolve, reject) => {
-        // Add a small delay to ensure DOM is ready
-        setTimeout(() => {
+        const attemptRender = (
+          attempt: number = 1,
+          maxAttempts: number = 5
+        ) => {
+          // Check if container element exists
+          const container = document.getElementById(containerId);
+          if (!container) {
+            if (attempt < maxAttempts) {
+              console.log(
+                `Container ${containerId} not found, retrying in ${
+                  attempt * 200
+                }ms (attempt ${attempt}/${maxAttempts})`
+              );
+              setTimeout(
+                () => attemptRender(attempt + 1, maxAttempts),
+                attempt * 200
+              );
+              return;
+            } else {
+              console.error(
+                `Container ${containerId} not found after ${maxAttempts} attempts`
+              );
+              reject(
+                new Error(
+                  `reCAPTCHA container element '${containerId}' not found`
+                )
+              );
+              return;
+            }
+          }
+
+          // Container exists, proceed with rendering
           window.grecaptcha.ready(() => {
             try {
               // Clear any existing content in the container
-              const container = document.getElementById(containerId);
-              if (container) {
-                container.innerHTML = "";
-              }
+              container.innerHTML = "";
 
               // Reset any existing widget first
               if (widgetIdRef.current) {
@@ -98,6 +125,8 @@ export const useRecaptcha = () => {
                   // Widget might not exist anymore, that's okay
                   console.log("Previous widget reset failed, continuing...");
                 }
+                // Clear the old widget reference
+                widgetIdRef.current = null;
               }
 
               const widgetId = window.grecaptcha.render(containerId, {
@@ -134,7 +163,10 @@ export const useRecaptcha = () => {
               reject(error);
             }
           });
-        }, 100);
+        };
+
+        // Start the render attempt with a small initial delay
+        setTimeout(() => attemptRender(), 100);
       });
     },
     [siteKey]
@@ -151,9 +183,15 @@ export const useRecaptcha = () => {
       return globalResponse;
     }
 
+    // Check if grecaptcha is available
+    if (!window.grecaptcha) {
+      console.warn("grecaptcha not available when getting response");
+      return "";
+    }
+
     // Fallback to widget response
     if (!widgetIdRef.current) {
-      console.error("No reCAPTCHA widget found - widgetIdRef.current is null");
+      console.warn("No reCAPTCHA widget found - widgetIdRef.current is null");
       console.log("Widget rendered state:", widgetRendered);
       console.log("Is loaded state:", isLoaded);
       console.log("grecaptcha exists:", !!window.grecaptcha);
@@ -162,6 +200,7 @@ export const useRecaptcha = () => {
     }
 
     try {
+      // Check if the widget still exists before trying to get response
       const response = window.grecaptcha.getResponse(widgetIdRef.current);
       console.log(
         "Getting reCAPTCHA response from widget, length:",
@@ -169,7 +208,10 @@ export const useRecaptcha = () => {
       );
       return response;
     } catch (error) {
-      console.error("Error getting reCAPTCHA response:", error);
+      console.warn("Error getting reCAPTCHA response from widget:", error);
+      // Clear the invalid widget reference
+      widgetIdRef.current = null;
+      setWidgetRendered(false);
       return "";
     }
   }, [widgetRendered, isLoaded, renderAttempts]);
@@ -178,12 +220,15 @@ export const useRecaptcha = () => {
     // Clear the global response
     (window as any).__recaptchaResponse = "";
 
-    if (widgetIdRef.current) {
+    if (widgetIdRef.current && window.grecaptcha) {
       try {
         window.grecaptcha.reset(widgetIdRef.current);
         console.log("reCAPTCHA widget reset");
       } catch (error) {
-        console.error("Error resetting reCAPTCHA widget:", error);
+        console.warn("Error resetting reCAPTCHA widget:", error);
+        // Clear the invalid widget reference
+        widgetIdRef.current = null;
+        setWidgetRendered(false);
       }
     }
   }, []);
@@ -193,10 +238,31 @@ export const useRecaptcha = () => {
     setWidgetRendered(false);
   }, []);
 
+  const cleanup = useCallback(() => {
+    // Clear the global response
+    (window as any).__recaptchaResponse = "";
+
+    // Reset and clear widget reference
+    if (widgetIdRef.current && window.grecaptcha) {
+      try {
+        window.grecaptcha.reset(widgetIdRef.current);
+      } catch (e) {
+        // Widget might not exist anymore, that's okay
+        console.log("Cleanup: Previous widget reset failed, continuing...");
+      }
+    }
+
+    // Clear references
+    widgetIdRef.current = null;
+    setWidgetRendered(false);
+    setRenderAttempts(0);
+  }, []);
+
   return {
     renderRecaptcha,
     getRecaptchaResponse,
     resetRecaptcha,
+    cleanup,
     isLoaded,
     widgetRendered,
     retryRender,

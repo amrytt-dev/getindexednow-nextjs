@@ -80,6 +80,7 @@ export const AuthPage = () => {
     renderRecaptcha,
     getRecaptchaResponse,
     resetRecaptcha,
+    cleanup,
     isLoaded,
     widgetRendered,
     retryRender,
@@ -176,8 +177,11 @@ export const AuthPage = () => {
     if (isLoaded) {
       const renderWidget = async () => {
         try {
-          // Longer delay to ensure tab content is fully rendered and DOM is stable
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          // Clean up any existing widgets first
+          cleanup();
+
+          // Wait for the DOM to be fully updated after tab change
+          await new Promise((resolve) => setTimeout(resolve, 300));
 
           // Clear any existing widgets first
           const signinContainer = document.getElementById("recaptcha-signin");
@@ -192,39 +196,29 @@ export const AuthPage = () => {
           console.log(
             `Attempting to render reCAPTCHA in container: ${targetContainer}`
           );
+
+          // The renderRecaptcha function now handles retries internally
           await renderRecaptcha(targetContainer);
 
           // Clear reCAPTCHA errors when tab changes
           setRecaptchaError(null);
         } catch (error) {
           console.error("Failed to render reCAPTCHA widget:", error);
-          // Retry once after a delay
-          setTimeout(async () => {
-            try {
-              const targetContainer =
-                activeTab === "signin"
-                  ? "recaptcha-signin"
-                  : "recaptcha-signup";
-              console.log(
-                `Retrying to render reCAPTCHA in container: ${targetContainer}`
-              );
-              await renderRecaptcha(targetContainer);
-            } catch (retryError) {
-              console.error(
-                "Retry failed to render reCAPTCHA widget:",
-                retryError
-              );
-              // If retry fails, allow manual retry
-              setRecaptchaError(
-                "reCAPTCHA failed to load. Please refresh the page and try again."
-              );
-            }
-          }, 1000);
+          setRecaptchaError(
+            "reCAPTCHA failed to load. Please refresh the page and try again."
+          );
         }
       };
       renderWidget();
     }
-  }, [isLoaded, renderRecaptcha, activeTab]);
+  }, [isLoaded, renderRecaptcha, cleanup, activeTab]);
+
+  // Cleanup reCAPTCHA when component unmounts
+  useEffect(() => {
+    return () => {
+      cleanup();
+    };
+  }, [cleanup]);
 
   // Utility function to handle redirects after successful login
   const handleSuccessfulLogin = useCallback(() => {
@@ -832,6 +826,7 @@ export const AuthPage = () => {
                     <div className="flex flex-col items-center mb-4">
                       <div
                         id="recaptcha-signin"
+                        className="min-h-[78px] min-w-[304px] flex items-center justify-center"
                         onClick={handleRecaptchaInteraction}
                       ></div>
                       {recaptchaError && activeTab === "signin" && (
@@ -1089,6 +1084,7 @@ export const AuthPage = () => {
                     <div className="flex flex-col items-center mb-4">
                       <div
                         id="recaptcha-signup"
+                        className="min-h-[78px] min-w-[304px] flex items-center justify-center"
                         onClick={handleRecaptchaInteraction}
                       ></div>
                       {recaptchaError && activeTab === "signup" && (

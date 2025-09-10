@@ -270,7 +270,15 @@ export const PlansBilling = () => {
 
       if (action === "upgrade") {
         console.log("upgrade Data >>>>>>:", data);
-        if (data.checkoutSession && data.checkoutSession.url) {
+        if (data.error) {
+          console.error("Upgrade error:", data.error);
+          toast({
+            title: "Upgrade Failed",
+            description:
+              data.error || "Failed to process upgrade. Please try again.",
+            variant: "destructive",
+          });
+        } else if (data.checkoutSession && data.checkoutSession.url) {
           localStorage.setItem("lastUpgradePlanId", plan.id);
           console.log(
             "Redirecting to checkout session URL:",
@@ -278,8 +286,13 @@ export const PlansBilling = () => {
           );
           redirectWithDarkOverlay(data.checkoutSession.url);
         } else {
-          console.log("Redirecting to cancel URL: /payment-cancel");
-          window.location.href = "/payment-cancel";
+          console.error("No checkout session URL received:", data);
+          toast({
+            title: "Upgrade Failed",
+            description:
+              "Unable to create checkout session. Please try again or contact support.",
+            variant: "destructive",
+          });
         }
       } else {
         toast({

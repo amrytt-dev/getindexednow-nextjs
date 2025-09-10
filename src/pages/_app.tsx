@@ -10,6 +10,7 @@ import { setupHttpInterceptor } from "@/utils/httpInterceptor";
 import { initFirebaseClient } from "@/utils/firebaseClient";
 import { UrlProgressProvider } from "@/contexts/UrlProgressContext";
 import { PendingTasksProvider } from "@/contexts/PendingTasksContext";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -48,9 +49,11 @@ export default function App({ Component, pageProps }: AppProps) {
       <UserProvider>
         <UrlProgressProvider>
           <PendingTasksProvider>
-            {showPublicHeader && <Header />}
-            <Component {...pageProps} />
-            {showFooter && <Footer />}
+            <TooltipProvider>
+              {showPublicHeader && <Header />}
+              <Component {...pageProps} />
+              {showFooter && <Footer />}
+            </TooltipProvider>
           </PendingTasksProvider>
         </UrlProgressProvider>
       </UserProvider>
