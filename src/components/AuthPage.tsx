@@ -389,15 +389,32 @@ export const AuthPage = () => {
 
     setLoading(true);
     try {
-      const payload = {
-        ...values,
-        recaptchaToken: recaptchaResponse,
-      };
-      const response = await fetch(`${BASE_URL}/api/auth/login`, {
+      // First, authenticate with Firebase
+      const auth = getFirebaseAuth();
+      if (!auth) {
+        throw new Error("Firebase is not configured. Please try again later.");
+      }
+
+      // Use Firebase email/password sign-in to obtain a Firebase ID token
+      const cred = await signInWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
+      const idToken = await cred.user.getIdToken();
+
+      // Now authenticate with backend using Firebase token
+      const response = await fetch(`${BASE_URL}/api/auth/firebase-login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          recaptchaToken: recaptchaResponse,
+        }),
       });
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(
@@ -415,30 +432,49 @@ export const AuthPage = () => {
         return;
       }
 
-      // Use Firebase email/password sign-in to obtain a Firebase ID token
-      try {
-        const auth = getFirebaseAuth();
-        if (auth) {
-          const cred = await signInWithEmailAndPassword(
-            auth,
-            values.email,
-            values.password
-          );
-          const idToken = await cred.user.getIdToken();
-          await setToken(idToken);
-        }
-      } catch (e) {
-        console.error("Firebase sign-in failed:", e);
-      }
+      // Set the Firebase token for future API calls
+      await setToken(idToken);
+
       toast({
         title: "Login successful",
         description: "You are now signed in.",
       });
       handleSuccessfulLogin();
     } catch (error: any) {
+      console.error("Login error:", error);
+
+      let errorMessage = "Please try again later.";
+
+      // Handle specific Firebase auth errors
+      if (error.code) {
+        switch (error.code) {
+          case "auth/user-not-found":
+            errorMessage = "No account found with this email address.";
+            break;
+          case "auth/wrong-password":
+            errorMessage = "Incorrect password. Please try again.";
+            break;
+          case "auth/invalid-email":
+            errorMessage = "Please enter a valid email address.";
+            break;
+          case "auth/user-disabled":
+            errorMessage = "This account has been disabled.";
+            break;
+          case "auth/too-many-requests":
+            errorMessage = "Too many failed attempts. Please try again later.";
+            break;
+          case "auth/network-request-failed":
+            errorMessage =
+              "Network error. Please check your connection and try again.";
+            break;
+          default:
+            errorMessage = error.message || "Please try again later.";
+        }
+      }
+
       toast({
         title: "Login failed",
-        description: error.message || "Please try again later.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
