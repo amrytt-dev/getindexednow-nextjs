@@ -56,6 +56,7 @@ import {
   useUnarchiveUser,
   useDeleteUser,
 } from "@/hooks/useAdminUsers";
+import { getWithAuth } from "@/utils/fetchWithAuth";
 
 export const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -166,24 +167,12 @@ export const UserManagement = () => {
     setLoadingBonusCredits((prev) => ({ ...prev, [userId]: true }));
 
     try {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(
-        `${backendBaseUrl}/api/admin/users/${userId}/bonus-credits`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.code === 0) {
-          setBonusCredits((prev) => ({
-            ...prev,
-            [userId]: result.result.bonusCredits || [],
-          }));
-        }
+      const result = await getWithAuth(`/admin/users/${userId}/bonus-credits`);
+      if (result.code === 0) {
+        setBonusCredits((prev) => ({
+          ...prev,
+          [userId]: result.result.bonusCredits || [],
+        }));
       }
     } catch (error) {
       console.error("Error fetching bonus credits:", error);

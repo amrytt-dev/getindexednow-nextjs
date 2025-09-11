@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Minus } from "lucide-react";
 import { UserData } from "@/types/admin";
+import { postWithAuth } from "@/utils/fetchWithAuth";
 
 interface AddCreditsDialogProps {
   open: boolean;
@@ -56,28 +57,14 @@ export const AddCreditsDialog = ({
       // Only add operation
       const finalCreditAmount = creditAmount;
 
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(
-        `${backendBaseUrl}/api/admin/users/${user.user_id}/add-credit`,
+      const result = await postWithAuth(
+        `/admin/users/${user.user_id}/add-credit`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            amount: finalCreditAmount,
-            reason: reason || undefined,
-            expiryDays: expiryDays ? parseInt(expiryDays) : undefined,
-          }),
+          amount: finalCreditAmount,
+          reason: reason || undefined,
+          expiryDays: expiryDays ? parseInt(expiryDays) : undefined,
         }
       );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to add credits");
-      }
 
       // Handle the new response structure
       if (result.code !== 0) {

@@ -24,6 +24,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { getWithAuth, postWithAuth } from "@/utils/fetchWithAuth";
 
 interface VipTaskStats {
   totalTasks: number;
@@ -100,21 +101,7 @@ const VipTaskManagement = () => {
   } = useQuery({
     queryKey: ["vip-task-stats"],
     queryFn: async (): Promise<VipTaskStats> => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(
-        `${backendBaseUrl}/api/admin/vip-tasks/stats`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch VIP task statistics");
-      }
-
-      return response.json();
+      return await getWithAuth("/admin/vip-tasks/stats");
     },
     refetchInterval: 30000, // Refetch every 30 seconds
   });
@@ -127,18 +114,7 @@ const VipTaskManagement = () => {
   } = useQuery({
     queryKey: ["vip-queue-stats"],
     queryFn: async (): Promise<VipQueueStats> => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(`${backendBaseUrl}/api/vip/queue/status`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch VIP queue statistics");
-      }
-
-      const data = await response.json();
+      const data = await getWithAuth("/vip/queue/status");
       return {
         waiting: data.stats.waiting,
         delayed: data.stats.delayed ?? 0,
@@ -166,18 +142,7 @@ const VipTaskManagement = () => {
   } = useQuery({
     queryKey: ["vip-failed-tasks"],
     queryFn: async (): Promise<FailedTask[]> => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(`${backendBaseUrl}/api/vip/failed`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch failed VIP tasks");
-      }
-
-      const data = await response.json();
+      const data = await getWithAuth("/vip/failed");
       return data.failedTasks || [];
     },
     refetchInterval: 15000, // Refetch every 15 seconds
@@ -191,18 +156,7 @@ const VipTaskManagement = () => {
   } = useQuery({
     queryKey: ["vip-delayed-jobs"],
     queryFn: async (): Promise<DelayedJob[]> => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(`${backendBaseUrl}/api/vip/delayed`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch delayed jobs");
-      }
-
-      const data = await response.json();
+      const data = await getWithAuth("/vip/delayed");
       return data.delayedJobs || [];
     },
     refetchInterval: 10000, // Refresh every 10 seconds to update countdown
@@ -216,21 +170,7 @@ const VipTaskManagement = () => {
   } = useQuery({
     queryKey: ["vip-health-status"],
     queryFn: async (): Promise<HealthStatus> => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(
-        `${backendBaseUrl}/api/vip/health/speedyindex`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch health status");
-      }
-
-      return response.json();
+      return await getWithAuth("/vip/health/speedyindex");
     },
     refetchInterval: 60000, // Refetch every minute
   });
@@ -238,20 +178,7 @@ const VipTaskManagement = () => {
   // Bulk retry mutation
   const bulkRetryMutation = useMutation({
     mutationFn: async () => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(`${backendBaseUrl}/api/vip/bulk-retry`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to bulk retry failed tasks");
-      }
-
-      return response.json();
+      return await postWithAuth("/vip/bulk-retry");
     },
     onSuccess: (data) => {
       toast.success(
@@ -268,23 +195,7 @@ const VipTaskManagement = () => {
   // Individual task retry mutation
   const retryTaskMutation = useMutation({
     mutationFn: async (taskId: string) => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(
-        `${backendBaseUrl}/api/vip/retry/${taskId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to retry task");
-      }
-
-      return response.json();
+      return await postWithAuth(`/vip/retry/${taskId}`);
     },
     onSuccess: (data, taskId) => {
       toast.success(
