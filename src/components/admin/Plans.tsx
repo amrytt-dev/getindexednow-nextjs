@@ -175,17 +175,7 @@ export default function Plans() {
   const fetchPlans = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${backendBaseUrl}/api/admin/plans`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch plans");
-      }
-      const data: PlansResponse = await response.json();
+      const data: PlansResponse = await getWithAuth("/admin/plans");
 
       if (data.code === 0) {
         setPlans(data.result.plans);
@@ -217,33 +207,24 @@ export default function Plans() {
 
     try {
       setSaving(true);
-      const token = localStorage.getItem("token");
-      const url = editingPlan
-        ? `${backendBaseUrl}/api/admin/plans/${editingPlan.id}`
-        : `${backendBaseUrl}/api/admin/plans`;
+      const planData = {
+        name: formData.name,
+        price: Math.round(parseFloat(formData.price) * 100), // Convert to cents
+        credits: parseInt(formData.credits),
+        descriptions: formData.descriptions,
+        includesInPlan: formData.features
+          .split("\n")
+          .filter((f) => f.trim())
+          .join(", "),
+        billingCycle: formData.billingCycle,
+      };
 
-      const method = editingPlan ? "PUT" : "POST";
+      const data = editingPlan
+        ? await postWithAuth(`/admin/plans/${editingPlan.id}`, planData, {
+            method: "PUT",
+          })
+        : await postWithAuth("/admin/plans", planData);
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          price: Math.round(parseFloat(formData.price) * 100), // Convert to cents
-          credits: parseInt(formData.credits),
-          descriptions: formData.descriptions,
-          includesInPlan: formData.features
-            .split("\n")
-            .filter((f) => f.trim())
-            .join(", "),
-          billingCycle: formData.billingCycle,
-        }),
-      });
-
-      const data = await response.json();
       if (data.code === 0) {
         toast({
           title: "Success",
@@ -309,19 +290,12 @@ export default function Plans() {
   const handleToggleStatus = async (planId: string) => {
     try {
       setToggling(planId);
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${backendBaseUrl}/api/admin/plans/${planId}/toggle`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const data = await postWithAuth(
+        `/admin/plans/${planId}/toggle`,
+        {},
+        { method: "PATCH" }
       );
 
-      const data = await response.json();
       if (data.code === 0) {
         toast({
           title: "Success",
@@ -346,19 +320,8 @@ export default function Plans() {
   const handleDelete = async (planId: string) => {
     try {
       setDeleting(planId);
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${backendBaseUrl}/api/admin/plans/${planId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const data = await deleteWithAuth(`/admin/plans/${planId}`);
 
-      const data = await response.json();
       if (data.code === 0) {
         toast({
           title: "Plan Deleted",

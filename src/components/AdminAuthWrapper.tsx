@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useUser } from '@/contexts/UserContext';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useUser } from "@/contexts/UserContext";
+import AdminLayout from "./AdminLayout";
 
 interface AdminAuthWrapperProps {
   children: React.ReactNode;
@@ -8,8 +9,7 @@ interface AdminAuthWrapperProps {
 
 export const AdminAuthWrapper = ({ children }: AdminAuthWrapperProps) => {
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
   const { user, loading: userLoading } = useUser();
 
   useEffect(() => {
@@ -20,26 +20,20 @@ export const AdminAuthWrapper = ({ children }: AdminAuthWrapperProps) => {
 
     // Check if user is authenticated
     if (!user) {
-      navigate('/auth', { replace: true, state: { from: location.pathname } });
+      router.replace("/auth");
       return;
     }
 
     // Check if user has admin or editor (blog) access
     if (!user.isAdmin && !user.isEditor) {
-      // Redirect non-admin users to login page with a message
-      navigate('/auth', { 
-        replace: true, 
-        state: { 
-          from: location.pathname,
-          message: 'Admin/editor access required. Please log in with the correct account.' 
-        } 
-      });
+      // Redirect non-admin users to login page
+      router.replace("/auth");
       return;
     }
 
     // User is authenticated and is admin
     setLoading(false);
-  }, [user, userLoading, navigate, location.pathname]);
+  }, [user, userLoading, router]);
 
   if (userLoading || loading) {
     return (
@@ -54,5 +48,5 @@ export const AdminAuthWrapper = ({ children }: AdminAuthWrapperProps) => {
     return null;
   }
 
-  return <>{children}</>;
-}; 
+  return <AdminLayout>{children}</AdminLayout>;
+};

@@ -27,6 +27,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PaymentHistoryChart } from "./PaymentHistoryChart";
 import { useQuery } from "@tanstack/react-query";
+import { getWithAuth } from "@/utils/fetchWithAuth";
 
 interface DashboardStats {
   totalUsers: number;
@@ -128,23 +129,8 @@ export const AdminDashboard = () => {
   } = useQuery({
     queryKey: ["admin-dashboard", globalFilter, customDateRange],
     queryFn: async (): Promise<DashboardStats> => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const params = buildQueryParams(globalFilter, customDateRange);
-
-      const response = await fetch(
-        `${backendBaseUrl}/api/admin/dashboard?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch dashboard data");
-      }
-
-      const data = await response.json();
+      const data = await getWithAuth(`/admin/dashboard?${params.toString()}`);
 
       return {
         totalUsers: data.result?.totalUsers || 0,
@@ -170,23 +156,16 @@ export const AdminDashboard = () => {
       customDateRange,
     ],
     queryFn: async () => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const effectiveFilter = getEffectiveFilter(totalUsersFilter);
       const effectiveDateRange = getEffectiveDateRange(totalUsersFilter);
       const params = buildQueryParams(effectiveFilter, effectiveDateRange);
 
-      const response = await fetch(
-        `${backendBaseUrl}/api/admin/dashboard?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (!response.ok) return null;
-      const data = await response.json();
-      return data.result?.totalUsers || 0;
+      try {
+        const data = await getWithAuth(`/admin/dashboard?${params.toString()}`);
+        return data.result?.totalUsers || 0;
+      } catch (error) {
+        return null;
+      }
     },
     enabled: true, // Always enabled since we need to check both filters
   });
@@ -199,23 +178,16 @@ export const AdminDashboard = () => {
       customDateRange,
     ],
     queryFn: async () => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const effectiveFilter = getEffectiveFilter(subscribedUsersFilter);
       const effectiveDateRange = getEffectiveDateRange(subscribedUsersFilter);
       const params = buildQueryParams(effectiveFilter, effectiveDateRange);
 
-      const response = await fetch(
-        `${backendBaseUrl}/api/admin/dashboard?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (!response.ok) return null;
-      const data = await response.json();
-      return data.result?.totalSubscribedUsers || 0;
+      try {
+        const data = await getWithAuth(`/admin/dashboard?${params.toString()}`);
+        return data.result?.totalSubscribedUsers || 0;
+      } catch (error) {
+        return null;
+      }
     },
     enabled: true,
   });
@@ -228,23 +200,16 @@ export const AdminDashboard = () => {
       customDateRange,
     ],
     queryFn: async () => {
-      const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const effectiveFilter = getEffectiveFilter(totalRevenueFilter);
       const effectiveDateRange = getEffectiveDateRange(totalRevenueFilter);
       const params = buildQueryParams(effectiveFilter, effectiveDateRange);
 
-      const response = await fetch(
-        `${backendBaseUrl}/api/admin/dashboard?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (!response.ok) return null;
-      const data = await response.json();
-      return (data.result?.totalRevenue || 0) / 100;
+      try {
+        const data = await getWithAuth(`/admin/dashboard?${params.toString()}`);
+        return (data.result?.totalRevenue || 0) / 100;
+      } catch (error) {
+        return null;
+      }
     },
     enabled: true,
   });
@@ -302,17 +267,7 @@ export const AdminDashboard = () => {
         setSpeedyLoading(true);
         setSpeedyError(null);
         setSpeedyBalance(null);
-        const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-        const res = await fetch(
-          `${backendBaseUrl}/api/proxy/speedyindex/account`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data?.message || "Failed to fetch");
+        const data = await getWithAuth("/proxy/speedyindex/account");
         const indexer =
           data?.balance?.indexer ?? data?.result?.balance?.indexer;
         const checker =
